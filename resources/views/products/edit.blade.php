@@ -1,22 +1,11 @@
-@extends('master')
+@extends('layouts_user.index')
+
+@section('title', "Edit Product {{ $product->nama }}")
 
 @section('content_master')
 
-@push('styles')
-    <style>
-        .ck-editor__editable[role="textbox"] {
-            /* editing area */
-            min-height: 200px;
-        }
-        .ck-content .image {
-            /* block images */
-            max-width: 80%;
-            margin: 20px auto;
-        }
-    </style>
-@endpush
-
 <a href="{{ route('homepage') }}" class="mt-2 font-semibold text-slate-800 hover:text-green-300 transition duration-200 ease-in-out">Kembali</a>
+
 <div class="relative block p-8 mt-8 overflow-hidden border bg-white border-slate-100 rounded-lg">
 
     @if (session()->has('success'))
@@ -42,11 +31,12 @@
     @endif
 
     <form
-        action="{{ route('products.store') }}"
+        action="{{ route('products.update', $product->id) }}"
         method="POST"
         enctype="multipart/form-data"
     >
         @csrf
+        @method('PATCH')
         <div class="-mx-3 flex flex-wrap">
             <div class="w-full px-3 sm:w-1/2">
                 <div class="mb-5">
@@ -62,6 +52,7 @@
                     id="nama"
                     placeholder="Nama..."
                     class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#86efac] focus:shadow-md"
+                    value="{{ $product->nama }}"
                     />
                 </div>
             </div>
@@ -74,11 +65,12 @@
                     Harga
                     </label>
                     <input
-                    type="number"
+                    type="text"
                     name="harga"
                     id="harga"
                     placeholder="Harga..."
                     class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#86efac] focus:shadow-md"
+                    value="{{ $product->harga }}"
                     />
                 </div>
             </div>
@@ -96,6 +88,7 @@
                     id="diskon"
                     placeholder="Diskon..."
                     class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#86efac] focus:shadow-md"
+                    value="{{ floor($product->diskon) }}"
                     />
                 </div>
             </div>
@@ -108,8 +101,8 @@
                     Kondisi
                     </label>
                     <select name="kondisi" id="kondisi" class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#86efac] focus:shadow-md">
-                        <option value="0">New</option>
-                        <option value="1">Second</option>
+                        <option value="0" {{ $product->kondisi == 0 ? 'selected' : '' }}>New</option>
+                        <option value="1" {{ $product->kondisi == 1 ? 'selected' : '' }}>Second</option>
                     </select>
                 </div>
             </div>
@@ -152,7 +145,7 @@
                     >
                     Deskripsi
                     </label>
-                    <textarea name="deskripsi" id="editor" class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#86efac] focus:shadow-md" cols="30" rows="10" placeholder="Description..."></textarea>
+                    <textarea name="deskripsi" id="" class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#86efac] focus:shadow-md" cols="30" rows="5" placeholder="Description...">{{ $product->deskripsi }}</textarea>
                 </div>
             </div>
 
@@ -161,23 +154,11 @@
                     type="submit"
                     class="hover:shadow-form rounded-md bg-green-400 py-3 px-8 text-center text-base font-semibold text-white outline-none"
                 >
-                    Create Product
+                    Update Product
                 </button>
             </div>
 
         </div>
-    </form>
-</div>
-
-@push('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/35.3.2/classic/ckeditor.js"></script>
-<script>
-    ClassicEditor
-        .create( document.querySelector( '#editor' ) )
-        .catch( error => {
-            console.error( error );
-        } );
-</script>
-@endpush
+    </form>    
 
 @endsection

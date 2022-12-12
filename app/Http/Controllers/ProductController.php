@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductFormRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -15,6 +16,12 @@ class ProductController extends Controller
         return view('products.show', compact('product'));
     }
 
+    public function edit($id) {
+        $product = Product::findOrfail($id);
+
+        return view('products.edit', compact('product'));
+    }
+
     public function create() {
         
         return view('products.create');
@@ -23,9 +30,7 @@ class ProductController extends Controller
     public function store(ProductFormRequest $request) {
 
         $request->validated();
-
-        // dd("test");
-
+        
         if($request->hasFile('foto')) {
             $image_path = 'storage/' . $request->file('foto')->store('images_product', 'public');
         }
@@ -33,9 +38,13 @@ class ProductController extends Controller
         Product::create([
             'nama' => $request->input('nama'),
             'harga' => $request->input('harga'),
+            'diskon' => $request->input('diskon'),
+            'harga_diskon' => ($request->input('harga') * 100) / $request->input('diskon'),
             'deskripsi' => $request->input('deskripsi'),
             'foto_name' => $request->file('foto')->getClientOriginalName(),
-            'foto_url' => $image_path
+            'foto_url' => $image_path,
+            'kondisi' => $request->input('kondisi'),
+            'status' => $request->input('status'),
         ]);
 
         return redirect()->back()->with('success', 'Product created successfully');
@@ -48,6 +57,7 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         
         if($request->hasFile('foto')) {
+            isset($product->foto_url) ? unlink(public_path($product->foto_url)) : false;
             $image_path = 'storage/' . $request->file('foto')->store('images_product', 'public');
         }
 
@@ -65,11 +75,29 @@ class ProductController extends Controller
     public function destroy($id) {
 
         $product = Product::findOrFail($id);
-        $product->delete();
         
         file_exists(public_path($product->foto_url)) ? unlink(public_path($product->foto_url)) : false;
+        $product->delete();
+        
 
         return redirect()->back()->with('success', 'Product deleted successfully');
+    }
+
+    public function search(Request $request)
+    {
+        $products = Product::where([
+            ['nama', '!=', Null],
+            [function ($query) use ($request) {
+                if (($request->input('keyword'))) {
+                    $query->orWhere('nama', 'LIKE', '%' . $request->input('keyword') . '%')
+                        ->get();
+                }
+            }]
+        ])->get();
+
+        // dd($products);
+
+        return view('products.index', compact('products'));
     }
 
 }
